@@ -1210,3 +1210,56 @@ def plot_probe(probe, path, filename):
         probe.plot()
     plt.savefig(os.path.join(path, filename))
     plt.close()
+
+
+def plot_weight_distribution(path, model):
+    parameters = model.get_weights()
+    weights = parameters[0::2]
+    biases = parameters[1::2]
+
+    plt.figure(figsize=(15, 10))
+    plt.boxplot([np.ravel(w) for w in weights], whis=15)
+    plt.xlabel("Layer index")
+    plt.ylabel("Weight value")
+    plt.savefig(os.path.join(path, 'weight_distribution'))
+
+    plt.figure(figsize=(15, 10))
+    plt.boxplot([np.ravel(b) for b in biases])
+    plt.xlabel("Layer index")
+    plt.ylabel("Bias value")
+    plt.savefig(os.path.join(path, 'bias_distribution'))
+
+
+def plot_execution_time_probe(path, probe):
+    plt.figure(figsize=(20, 5))
+    probe.plotExecutionTime('log')
+    plt.savefig(os.path.join(path, 'time_probe'))
+    execution_time = np.stack([probe.totalTimePerTimeStep,
+                               probe.hostTimePerTimeStep,
+                               probe.managementTimePerTimeStep,
+                               probe.learningTimePerTimeStep,
+                               probe.spikingTimePerTimeStep], -1)
+    np.savetxt(os.path.join(path, 'time_probe_csv'), execution_time,
+               fmt='%.4e', delimiter=',')
+
+
+def plot_energy_probe(path, probe):
+    plt.figure(figsize=(20, 5))
+    probe.plotEnergy('log')
+    plt.savefig(os.path.join(path, 'energy_probe'))
+
+
+def plot_power_probe(path, probe):
+    plt.figure(figsize=(20, 5))
+    probe.plotPower()
+    plt.savefig(os.path.join(path, 'power_probe'))
+
+
+def plot_parameter_histogram(path, filename, weights, biases, bins=32):
+    plt.figure()
+    ax1 = plt.gca()
+    ax2 = ax1.twinx()
+    ax1.hist(weights.ravel(), bins=bins, label='weights', alpha=0.5)
+    ax2.hist(biases.ravel(), bins=bins, label='biases', color='m', alpha=0.5)
+    plt.legend()
+    plt.savefig(os.path.join(path, filename))
